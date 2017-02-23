@@ -13,9 +13,9 @@ def main(argv):
 	for line in open(sys.argv[2]):
 		matrixB.append(line.strip('\n').split(','))
 	# multiplication
-	matrixA = numpy.matrix(matrixA, dtype=float)
-	matrixB = numpy.matrix(matrixB, dtype=float)
-	matrixC = [str(int(value)) for value in sorted((matrixA * matrixB).tolist()[0])]
+	matrixA = numpy.matrix(matrixA, dtype=int)
+	matrixB = numpy.matrix(matrixB, dtype=int)
+	matrixC = [str(value) for value in sorted((matrixA * matrixB).reshape(-1).tolist()[0])]
 	# print data
 	print '\n'.join(matrixC)
 	
