@@ -14,7 +14,7 @@ def main(argv):
 	for i in range(lena.size[0]):
 		for j in range(lena.size[1]):
 			if lenaPixel[i, j] == lenaModifiedPixel[i, j]:
-				imPixel[i, j] = (255, 255, 255, 0)
+				imPixel[i, j] = (0, 0, 0, 0)
 			else:
 				imPixel[i, j] = lenaModifiedPixel[i, j]
 	im.save('ans_two.png')
