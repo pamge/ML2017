@@ -9,7 +9,7 @@ from io import BytesIO
 HOURS = 9
 CASE = 'PM2.5'
 MAX_ITERATION = 100000
-VALIDATION_SIZE = 0
+VALIDATION_SIZE = 240
 ADAGRAD = True
 CASES = [
     'PM2.5', 'PM10', 'O3', 'AMB_TEMP', 'RH'
@@ -63,8 +63,8 @@ def train(train_labels, train_features):
     Y = numpy.matrix(train_labels)
     X = numpy.matrix(train_features2)
     weights = numpy.array(numpy.linalg.inv(X.T * X) * X.T * Y)
-    model = {'b': numpy.sum(weights[:][-1]), 'w': weights[:][0 : -1], 'rmse': root_square_mean_error(train_labels, numpy.dot(train_features2, weights))}
-    return model
+    model = {'b': numpy.sum(weights[:][-1]), 'w': weights[:][0 : -1]}
+    return model, root_square_mean_error(train_labels, numpy.dot(train_features2, weights))
 
 def test(model, test_features, path = None):
     labels = numpy.round(numpy.add(model['b'], numpy.dot(test_features, model['w'])))
@@ -75,7 +75,7 @@ def test(model, test_features, path = None):
                 f.write('id_%d,%f\n' % (i, labels[i][0]))
     return labels
     
-def main(is_best = False, use_model = False):
+def main(use_index = False, use_model = False):
     # read train data
     train_labels, train_features = read_data(TRAIN_PATH)
     if train_labels is None or train_features is None or train_labels.shape[0] != train_features.shape[0]:
@@ -88,14 +88,17 @@ def main(is_best = False, use_model = False):
         exit(-1)
     # shuffle row matrix
     try:
-        assert is_best
-        row_matrix = numpy.load('matrix_best.npy')
+        assert use_index
+        index = numpy.load('index_best').tolist()
     except:
-        row_matrix = numpy.identity(train_features.shape[0])
-        numpy.random.shuffle(row_matrix)
-        row_matrix = numpy.matrix(row_matrix)
-    train_labels = numpy.array(row_matrix * numpy.matrix(train_labels))
-    train_features = numpy.array(row_matrix * numpy.matrix(train_features))
+        index = numpy.random.permutation(train_labels.shape[0]).tolist()
+    temp_train_labels = []
+    temp_train_features = []
+    for i in index:
+        temp_train_labels.append(train_labels[i])
+        temp_train_features.append(train_features[i])
+    train_labels = numpy.array(temp_train_labels)
+    train_features = numpy.array(temp_train_features)
     # train
     try:
         assert use_model
@@ -103,16 +106,17 @@ def main(is_best = False, use_model = False):
         model_best = numpy.load('model_best')
         model['b'] = model_best['b']
         model['w'] = model_best['w']
+        train_rmse = 0
     except:
-        model = train(train_labels[VALIDATION_SIZE :], train_features[VALIDATION_SIZE :])
+        model, train_rmse = train(train_labels[VALIDATION_SIZE :], train_features[VALIDATION_SIZE :])
+    # test
+    labels = test(model, test_features, OUT_PATH)
     # validation     
     if VALIDATION_SIZE > 0:
         labels = test(model, train_features[0 : VALIDATION_SIZE], 'test_v.csv')
         rmse = root_square_mean_error(train_labels[0 : VALIDATION_SIZE], labels)
-        return model, row_matrix, rmse
-    # test
-    labels = test(model, test_features, OUT_PATH)
-    return model, row_matrix, 0
+        return model, index, rmse, train_rmse
+    return model, index, 0, train_rmse
 
 if __name__ == '__main__':
     numpy.set_printoptions(threshold = numpy.inf)
@@ -122,14 +126,15 @@ if __name__ == '__main__':
         TEST_PATH = sys.argv[2]
     if len(sys.argv) > 1:
         TRAIN_PATH = sys.argv[1]
-    # tune shuffle matrix
+    # tune parameters
     # best_rmse = sys.maxsize
-    # for i in range(100):
-    #     model, row_matrix, rmse = main()
-    #     if rmse < best_rmse:
-    #         best_rmse = rmse
-    #         numpy.save('matrix.npy', row_matrix)
+    # for i in range(500):
+    #     model, index, rmse, train_rmse = main()
+    #     if train_rmse < best_rmse:
+    #         best_rmse = train_rmse
+    #         numpy.save('index.npy', index)
     #         numpy.savez('model.npz', b = model['b'], w = model['w'])
-    #     print('index = %d, rmse = %f' % (i + 1, rmse))
-    # print('best rmse => %d' % best_rmse)
-    model, row_matrix, rmse = main(False, True)
+    #     print('i = %d, rmse = %f, train_rmse = %f' % (i + 1, rmse, train_rmse))
+    # print('best rmse => %f' % best_rmse)
+    model, index, rmse, train_rmse = main(True, True)
+    print('rmse = %f, train_rmse = %f' % (rmse, train_rmse))
