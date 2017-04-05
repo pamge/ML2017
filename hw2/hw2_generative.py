@@ -46,12 +46,19 @@ def test(model, features):
     return labels
 
 def main():
-    labels = read_labels('Y_train.csv')
-    features = read_features('X_train.csv')
-    test_features = read_features('X_test.csv')
+    assert(len(sys.argv) == 5)
+    # read argv
+    X_TRAIN = sys.argv[1]
+    Y_TRAIN = sys.argv[2]
+    X_TEST = sys.argv[3]
+    OUTPUT = sys.argv[4]
+    # read data
+    labels = read_labels(Y_TRAIN)
+    features = read_features(X_TRAIN)
+    test_features = read_features(X_TEST)
     model = train(labels, features)
     predict_labels = test(model, test_features)
-    with open('result.csv', 'w') as f:
+    with open(OUTPUT, 'w') as f:
         f.write('id,label\n')
         for i in range(len(predict_labels)):
             f.write('%d,%d\n' % (i + 1, predict_labels[i]))
