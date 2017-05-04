@@ -57,7 +57,7 @@ def main():
         heatmap = np.zeros((48,48))
         for i in range(48):
             for j in range(48):
-                heamap[i][j] = abs(grad_val[i][j])
+                heatmap[i][j] = abs(grad_val[i][j])
         thres = 0.1
         see = pixels.reshape(48,48)*255
 
