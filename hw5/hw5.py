@@ -1,20 +1,21 @@
 import numpy as np
-import string
+# import string
 import sys
 import pickle
 import keras.backend as K 
-from keras.preprocessing.text import Tokenizer
+# from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-from keras.models import Sequential
-from keras.layers import Dense,Dropout
-from keras.layers import GRU
-from keras.layers.embeddings import Embedding
-from keras.optimizers import Adam
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.models import load_model
+# from keras.models import Sequential
+# from keras.layers import Dense,Dropout
+# from keras.layers import GRU
+# from keras.layers.embeddings import Embedding
+# from keras.optimizers import Adam
+# from keras.callbacks import EarlyStopping, ModelCheckpoint
 
-from keras.layers import Activation
-from keras import regularizers
-from keras.layers.normalization import BatchNormalization
+# from keras.layers import Activation
+# from keras import regularizers
+# from keras.layers.normalization import BatchNormalization
 
 train_path = './train_data.csv' # sys.argv[1]
 test_path = sys.argv[1]
@@ -128,12 +129,12 @@ def f1_score(y_true,y_pred):
 ###   Main function   ###
 #########################
 def main():
-
+    tag_list = ['SCIENCE-FICTION', 'SPECULATIVE-FICTION', 'FICTION', 'NOVEL', 'FANTASY', "CHILDREN'S-LITERATURE", 'HUMOUR', 'SATIRE', 'HISTORICAL-FICTION', 'HISTORY', 'MYSTERY', 'SUSPENSE', 'ADVENTURE-NOVEL', 'SPY-FICTION', 'AUTOBIOGRAPHY', 'HORROR', 'THRILLER', 'ROMANCE-NOVEL', 'COMEDY', 'NOVELLA', 'WAR-NOVEL', 'DYSTOPIA', 'COMIC-NOVEL', 'DETECTIVE-FICTION', 'HISTORICAL-NOVEL', 'BIOGRAPHY', 'MEMOIR', 'NON-FICTION', 'CRIME-FICTION', 'AUTOBIOGRAPHICAL-NOVEL', 'ALTERNATE-HISTORY', 'TECHNO-THRILLER', 'UTOPIAN-AND-DYSTOPIAN-FICTION', 'YOUNG-ADULT-LITERATURE', 'SHORT-STORY', 'GOTHIC-FICTION', 'APOCALYPTIC-AND-POST-APOCALYPTIC-FICTION', 'HIGH-FANTASY']
     ### read training and testing data
-    (Y_data,X_data,tag_list) = read_data(train_path,True)
+    # (Y_data,X_data,tag_list) = read_data(train_path,True)
     (_, X_test,_) = read_data(test_path,False)
-    all_corpus = X_data + X_test
-    print ('Find %d articles.' %(len(all_corpus)))
+    # all_corpus = X_data + X_test
+    # print ('Find %d articles.' %(len(all_corpus)))
     
     ### tokenizer for all data
     # tokenizer = Tokenizer()
@@ -143,48 +144,47 @@ def main():
     
     ### convert word sequences to index sequence
     print ('Convert to index sequences.')
-    train_sequences = tokenizer.texts_to_sequences(X_data)
+    # train_sequences = tokenizer.texts_to_sequences(X_data)
     test_sequences = tokenizer.texts_to_sequences(X_test)
-    
     ### padding to equal length
     print ('Padding sequences.')
-    train_sequences = pad_sequences(train_sequences)
-    max_article_length = train_sequences.shape[1]
+    # train_sequences = pad_sequences(train_sequences)
+    max_article_length = 306 #train_sequences.shape[1]
     test_sequences = pad_sequences(test_sequences,maxlen=max_article_length)
     
     ###
-    train_tag = to_multi_categorical(Y_data,tag_list) 
+    # train_tag = to_multi_categorical(Y_data,tag_list) 
     
     ### split data into training set and validation set
-    (X_train,Y_train),(X_val,Y_val) = split_data(train_sequences,train_tag,split_ratio)
+    # (X_train,Y_train),(X_val,Y_val) = split_data(train_sequences,train_tag,split_ratio)
     
     ### get mebedding matrix from glove
-    print ('Get embedding dict from glove.')
-    embedding_dict = get_embedding_dict('glove.6B.%dd.txt'%embedding_dim)
-    print ('Found %s word vectors.' % len(embedding_dict))
-    num_words = len(word_index) + 1
-    print ('Create embedding matrix.')
-    embedding_matrix = get_embedding_matrix(word_index,embedding_dict,num_words,embedding_dim)
+    # print ('Get embedding dict from glove.')
+    # embedding_dict = get_embedding_dict('glove.6B.%dd.txt'%embedding_dim)
+    # print ('Found %s word vectors.' % len(embedding_dict))
+    # num_words = len(word_index) + 1
+    # print ('Create embedding matrix.')
+    # embedding_matrix = get_embedding_matrix(word_index,embedding_dict,num_words,embedding_dim)
 
     ### build model
     print ('Building model.')
-    model = Sequential()
-    model.add(Embedding(num_words,
-                        embedding_dim,
-                        weights=[embedding_matrix],
-                        input_length=max_article_length,
-                        trainable=False))
-    model.add(GRU(128,activation='tanh',dropout=0.5))
+    # model = Sequential()
+    # model.add(Embedding(num_words,
+    #                     embedding_dim,
+    #                     weights=[embedding_matrix],
+    #                     input_length=max_article_length,
+    #                     trainable=False))
+    # model.add(GRU(128,activation='tanh',dropout=0.5))
     
-    model.add(Dense(256,kernel_regularizer=regularizers.l2(0.001),bias_regularizer=regularizers.l2(0.001)))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(Dropout(0.5))
+    # model.add(Dense(256,kernel_regularizer=regularizers.l2(0.001),bias_regularizer=regularizers.l2(0.001)))
+    # model.add(BatchNormalization())
+    # model.add(Activation('relu'))
+    # model.add(Dropout(0.5))
     
-    model.add(Dense(128,kernel_regularizer=regularizers.l2(0.001),bias_regularizer=regularizers.l2(0.001)))
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(Dropout(0.5))
+    # model.add(Dense(128,kernel_regularizer=regularizers.l2(0.001),bias_regularizer=regularizers.l2(0.001)))
+    # model.add(BatchNormalization())
+    # model.add(Activation('relu'))
+    # model.add(Dropout(0.5))
 
     """
     model.add(Dense(64,kernel_regularizer=regularizers.l2(0.001),bias_regularizer=regularizers.l2(0.001)))
@@ -193,23 +193,23 @@ def main():
     model.add(Dropout(0.5))
     """
     
-    model.add(Dense(38,activation='sigmoid'))
+    # model.add(Dense(38,activation='sigmoid'))
     
-    model.summary()
+    # model.summary()
 
 
-    adam = Adam(lr=0.001,decay=1e-6,clipvalue=0.5)
-    model.compile(loss='categorical_crossentropy',
-                  optimizer=adam,
-                  metrics=[f1_score])
+    # adam = Adam(lr=0.001,decay=1e-6,clipvalue=0.5)
+    # model.compile(loss='categorical_crossentropy',
+    #               optimizer=adam,
+    #               metrics=[f1_score])
 
-    earlystopping = EarlyStopping(monitor='val_f1_score', patience = 10, verbose=1, mode='max')
-    checkpoint = ModelCheckpoint(filepath='model',
-                                 verbose=1,
-                                 save_best_only=True,
-                                 save_weights_only=True,
-                                 monitor='val_f1_score',
-                                 mode='max')
+    # earlystopping = EarlyStopping(monitor='val_f1_score', patience = 10, verbose=1, mode='max')
+    # checkpoint = ModelCheckpoint(filepath='model',
+    #                              verbose=1,
+    #                              save_best_only=True,
+    #                              save_weights_only=True,
+    #                              monitor='val_f1_score',
+    #                              mode='max')
     
     """
     hist = model.fit(X_train, Y_train, 
@@ -219,7 +219,9 @@ def main():
                      callbacks=[earlystopping,checkpoint])
     """
 
-    model.load_weights('model')
+    # model.load_weights('model')
+    # model.save('model')
+    model = load_model('model', custom_objects = {'f1_score': f1_score})
 
     Y_pred = model.predict(test_sequences)
     thresh = threshold
