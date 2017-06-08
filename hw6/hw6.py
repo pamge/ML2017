@@ -66,19 +66,20 @@ def split_data(X,Y,split_ratio):
 
 def main():
     # load data
-    data = load_data(sys.argv[1] + './train.csv')
+    # data = load_data(sys.argv[1] + 'train.csv')
     x_test = load_data(sys.argv[1] + 'test.csv', mode = 1) - 1
-    x_train = data.T[0:2].T - 1
-    y_train = data.T[2]
+    train_std = 1.11644539787 #np.std(Y_train)
+    train_mean = 3.58181274895 # np.mean(Y_train)
+    # x_train = data.T[0:2].T - 1
+    # y_train = data.T[2]
 
     # split data
-    (X_train, Y_train), (X_val, Y_val) = split_data(x_train, y_train, split_ratio = 0.10)
+    # (X_train, Y_train), (X_val, Y_val) = split_data(x_train, y_train, split_ratio = 0.10)
     # normalization
-    train_std = np.std(Y_train)
-    train_mean = np.mean(Y_train)
-    Y_val = (Y_val - train_mean) / train_std
-    Y_train = (Y_train - train_mean) / train_std
-
+    # train_std = np.std(Y_train)
+    # train_mean = np.mean(Y_train)
+    # Y_val = (Y_val - train_mean) / train_std
+    # Y_train = (Y_train - train_mean) / train_std
     # train
     # n_users, n_items = 0, 0
     # for sub in data:
