@@ -17,6 +17,7 @@ if __name__ == '__main__':
     if len(sys.argv) != 5:
         print('usage: ./python3 final.py train.csv macro.csv test.csv i_love_syaro.csv')
         exit(0)
+
     # read argv
     TRAIN_PATH = sys.argv[1] # './train.csv'
     MACRO_PATH = sys.argv[2] # './macro.csv'
